@@ -1,0 +1,401 @@
+/* =============================================
+   SITOC - Estilos de Inspección de Campo
+   ============================================= */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 15px;
+    background-color: #f4f5f7;
+    color: #333;
+    padding-top: 50px;
+}
+
+/* --- BARRA DE ALMACENAMIENTO OFFLINE --- */
+.barra-offline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ff9900;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    font-size: 13px;
+    z-index: 999;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.barra-offline button {
+    background: white;
+    color: #ff9900;
+    border: none;
+    padding: 3px 10px;
+    margin-left: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- PANEL DE HISTORIAL DE SITIOS --- */
+.panel-historial {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-top: 4px solid #42526e;
+}
+.titulo-historial {
+    font-size: 14px;
+    font-weight: bold;
+    color: #42526e;
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.lista-estaciones-guardadas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+.tarjeta-estacion {
+    background: #fafbfc;
+    border: 1px solid #dfe1e6;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+.tarjeta-estacion:hover {
+    background: #ebecf0;
+    border-color: #a5adba;
+}
+.info-estacion {
+    font-size: 13px;
+    color: #172b4d;
+    font-weight: bold;
+}
+.info-estacion small {
+    font-weight: normal;
+    color: #6b778c;
+    display: block;
+    margin-top: 2px;
+}
+
+/* --- BLOQUE DE DATOS GENERALES --- */
+.bloque-datos {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-top: 5px solid #0052cc;
+}
+.grupo-campo {
+    margin-bottom: 15px;
+}
+.grupo-campo label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #172b4d;
+}
+.grupo-campo input,
+.grupo-campo select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background-color: #fafbfc;
+}
+.grupo-campo input:focus,
+.grupo-campo select:focus {
+    border-color: #0052cc;
+    background-color: #fff;
+    outline: none;
+}
+
+h2.titulo-principal {
+    text-align: center;
+    color: #172b4d;
+    margin-bottom: 20px;
+}
+
+/* --- BLOQUES PLEGABLES (ACORDEÓN) --- */
+.bloque {
+    background: white;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 5px solid #0052cc;
+    overflow: hidden;
+}
+.cabecera-bloque {
+    background-color: #fff;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+.cabecera-bloque:hover {
+    background-color: #f4f5f7;
+}
+h3.titulo-bloque {
+    margin: 0;
+    color: #172b4d;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.status-badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background-color: #ffebe6;
+    color: #bf2600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+.status-badge.completo {
+    background-color: #e3fcef;
+    color: #006644;
+}
+.contenido-bloque {
+    display: none;
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid #eaecf0;
+}
+.bloque.abierto .contenido-bloque {
+    display: block;
+}
+
+.subtitulo-seccion {
+    background-color: #ebecf0;
+    padding: 6px 12px;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    color: #42526e;
+    font-size: 14px;
+}
+.foto-item {
+    margin-bottom: 20px;
+    padding: 12px;
+    border: 1px solid #dfe1e6;
+    border-radius: 6px;
+    background-color: #fff;
+}
+.foto-item.no-aplica {
+    background-color: #f4f5f7;
+    opacity: 0.6;
+    border-color: #a5adba;
+}
+.foto-item.incompleto {
+    border: 2px solid #bf2600 !important;
+    background-color: #ffebe6 !important;
+}
+.foto-item label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #172b4d;
+}
+.botonera {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.btn-opcion {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #a5adba;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.btn-camara {
+    background-color: #0052cc;
+    color: white;
+    border-color: #0052cc;
+}
+.btn-galeria {
+    background-color: #00875a;
+    color: white;
+    border-color: #00875a;
+}
+.btn-na {
+    background-color: #fff;
+    color: #42526e;
+}
+.btn-na.activo {
+    background-color: #ff9900;
+    color: white;
+    border-color: #e68a00;
+}
+
+.lista-archivos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+.archivo-badge {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e3fcef;
+    color: #006644;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #abf5d1;
+    gap: 10px;
+}
+.preview-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.img-miniatura {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #abf5d1;
+    cursor: pointer;
+    background-color: #eaecf0;
+}
+.btn-eliminar {
+    background: none;
+    border: none;
+    color: #bf2600;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px 10px;
+}
+.sin-archivos {
+    font-size: 12px;
+    color: #6b778c;
+    font-style: italic;
+}
+.input-oculto {
+    display: none !important;
+}
+
+/* --- PANEL DE ENVÍO --- */
+.panel-envio {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+.btn-envio-principal {
+    width: 100%;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+#btnEnviar {
+    background-color: #0052cc;
+}
+#btnGuardarLocal {
+    background-color: #42526e;
+}
+
+#estado {
+    margin-top: 15px;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    white-space: pre-line;
+}
+
+/* --- VISOR MODAL DE IMÁGENES --- */
+.visor-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.95);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+.contenedor-canvas-visor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 95%;
+    height: 65vh;
+}
+#canvasEdicion {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background-color: #000;
+    border-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+.visor-cerrar {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100002;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.barra-herramientas-visor {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 90%;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    z-index: 100001;
+}

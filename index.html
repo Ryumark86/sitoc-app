@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITOC - SPA Inspección Completa con Historial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="barraOffline" class="barra-offline">
+        Tienes <span id="lblContadorBorradores">0</span> reportes guardados localmente sin señal.
+        <button onclick="simularSincronizacionOffline()">Sincronizar Ahora</button>
+    </div>
+
+    <h2 class="titulo-principal">Control de Instalación de Campo - SITOC</h2>
+
+    <!-- BANDEJA DE FORMULARIOS ACTIVOS -->
+    <div id="panelHistorial" class="panel-historial" style="display: none;">
+        <h4 class="titulo-historial">📂 Estaciones Activas en la Memoria del Celular</h4>
+        <div id="listaEstaciones" class="lista-estaciones-guardadas"></div>
+    </div>
+
+    <div class="bloque-datos">
+        <h3 class="titulo-bloque" style="color: #172b4d; border-color: #dfe1e6; margin-bottom:15px;">Datos de la Actividad</h3>
+
+        <div class="grupo-campo">
+            <label for="txtCodigoProyecto">Código del Proyecto *</label>
+            <input type="text" id="txtCodigoProyecto" placeholder="Ej: PRY-2026-XYZ">
+        </div>
+        <div class="grupo-campo">
+            <label for="selActividad">Actividad a realizar *</label>
+            <select id="selActividad">
+                <option value="">-- Seleccione una actividad --</option>
+                <option value="Instalacion de Enlace">Instalación de Enlace</option>
+                <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+                <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
+                <option value="Desinstalaicon / Desmonte">Desinstalación / Desmonte</option>
+                <option value="Inspeccion de Aseguramiento de Calidad">Inspección de Aseguramiento de Calidad</option>
+            </select>
+        </div>
+        <div class="grupo-campo">
+            <label for="txtNombreSitio">Nombre del sitio de trabajo *</label>
+            <input type="text" id="txtNombreSitio" placeholder="Ej: Nodo Central Barranquilla">
+        </div>
+        <div class="grupo-campo">
+            <label for="txtDiaActividad">Día de la actividad *</label>
+            <input type="date" id="txtDiaActividad">
+        </div>
+        <div class="grupo-campo">
+            <label for="txtNombreTecnico">Nombre del técnico *</label>
+            <input type="text" id="txtNombreTecnico" placeholder="Ej: Juan Carlos Pérez">
+        </div>
+    </div>
+
+    <div id="formularioContenedor"></div>
+
+    <div class="panel-envio">
+        <button type="button" id="btnNuevoSitio" class="btn-opcion" style="background-color: #0052cc; color: white; margin-bottom: 5px; font-weight: bold; padding: 15px; font-size:14px;">➕ Iniciar Nuevo Sitio / Cambiar Estación</button>
+        <button id="btnGuardarLocal" class="btn-envio-principal" onclick="guardarBorradorLocalDB()">💾 Guardar Todo en Borrador Local</button>
+        <button id="btnEnviar" class="btn-envio-principal">🚀 Simular Envío de Reporte Completo</button>
+    </div>
+
+    <div id="estado"></div>
+
+    <!-- VISOR MODAL DE IMÁGENES -->
+    <div id="visorFlotante" class="visor-modal">
+        <span class="visor-cerrar" onclick="cerrarVisor()">&times;</span>
+        <div class="contenedor-canvas-visor">
+            <canvas id="canvasEdicion"></canvas>
+        </div>
+        <div class="barra-herramientas-visor">
+            <button id="btnModoDibujo" class="btn-herramienta" style="background-color:#0052cc;" onclick="cambiarModoVisor('MARCADOR')">✏️ Marcador</button>
+            <button id="btnBorrador" class="btn-herramienta" style="background-color:#42526e;" onclick="cambiarModoVisor('BORRADOR')">🧽 Borrador</button>
+            <button id="btnGuardarDibujo" class="btn-herramienta" style="background-color:#00875a;" onclick="guardarTrazosDibujo()">Guardar Cambios ✓</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
