@@ -63,19 +63,50 @@
 
     <div id="estado"></div>
 
-    <!-- VISOR MODAL DE IMÁGENES -->
+    <!-- VISOR MODAL DE IMÁGENES MEJORADO -->
     <div id="visorFlotante" class="visor-modal">
         <span class="visor-cerrar" onclick="cerrarVisor()">&times;</span>
+
         <div class="contenedor-canvas-visor">
             <canvas id="canvasEdicion"></canvas>
         </div>
+
+        <!-- BARRA DE HERRAMIENTAS COMPLETA -->
         <div class="barra-herramientas-visor">
-            <button id="btnModoDibujo" class="btn-herramienta" style="background-color:#0052cc;" onclick="cambiarModoVisor('MARCADOR')">✏️ Marcador</button>
-            <button id="btnBorrador" class="btn-herramienta" style="background-color:#42526e;" onclick="cambiarModoVisor('BORRADOR')">🧽 Borrador</button>
-            <button id="btnGuardarDibujo" class="btn-herramienta" style="background-color:#00875a;" onclick="guardarTrazosDibujo()">Guardar Cambios ✓</button>
+
+            <!-- Fila 1: Modos de dibujo -->
+            <div class="visor-fila">
+                <button id="btnModoDibujo"    class="btn-herramienta" onclick="cambiarModoVisor('MARCADOR')">✏️ Trazo</button>
+                <button id="btnModoCirculo"   class="btn-herramienta" onclick="cambiarModoVisor('CIRCULO')">⭕ Círculo</button>
+                <button id="btnModoRectangulo" class="btn-herramienta" onclick="cambiarModoVisor('RECTANGULO')">▭ Rectángulo</button>
+                <button id="btnModoCuadrado"  class="btn-herramienta" onclick="cambiarModoVisor('CUADRADO')">⬜ Cuadrado</button>
+                <button id="btnModoFlecha"    class="btn-herramienta" onclick="cambiarModoVisor('FLECHA')">➤ Flecha</button>
+                <button id="btnBorrador"      class="btn-herramienta" onclick="cambiarModoVisor('BORRADOR')">🧽 Borrador</button>
+                <button id="btnGuardarDibujo" class="btn-herramienta btn-guardar" onclick="guardarTrazosDibujo()" style="display:none;">💾 Guardar ✓</button>
+            </div>
+
+            <!-- Fila 2: Paleta de colores + grosor -->
+            <div class="visor-fila">
+                <span class="visor-label">Color:</span>
+                <button class="btn-color" data-color="#FF0000" onclick="cambiarColor('#FF0000')" style="background:#FF0000;" title="Rojo"></button>
+                <button class="btn-color" data-color="#0052cc" onclick="cambiarColor('#0052cc')" style="background:#0052cc;" title="Azul"></button>
+                <button class="btn-color" data-color="#FFFFFF" onclick="cambiarColor('#FFFFFF')" style="background:#FFFFFF;" title="Blanco"></button>
+                <button class="btn-color" data-color="#FFD700" onclick="cambiarColor('#FFD700')" style="background:#FFD700;" title="Amarillo"></button>
+                <button class="btn-color" data-color="#00c853" onclick="cambiarColor('#00c853')" style="background:#00c853;" title="Verde"></button>
+                <button class="btn-color" data-color="#90A4AE" onclick="cambiarColor('#90A4AE')" style="background:#90A4AE;" title="Gris"></button>
+                <span id="colorActualSwatch" class="color-swatch-actual" style="background:#FF0000;"></span>
+
+                <span class="visor-label" style="margin-left:12px;">Grosor:</span>
+                <input type="range" id="sliderGrosor" min="1" max="30" value="4"
+                       oninput="cambiarGrosor(this.value)" class="slider-grosor">
+                <span id="lblGrosor" class="visor-label">4px</span>
+            </div>
+
         </div>
     </div>
 
+    <!-- 👉 Edita bloques.js para añadir/quitar bloques y fotos -->
+    <script src="bloques.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
