@@ -1,85 +1,10 @@
 // =============================================
 //  SITOC - Lógica de Inspección de Campo
 // =============================================
-
-var estructuraBloques = [
-    {
-        bloque: "BLOQUE 1: INSTALACION DE ANTENAS",
-        subtitulos: [
-            {
-                nombre: "Foto Antena / ODU / RAU",
-                fotos: [
-                    "Foto linea de vista de la antena", "Foto panoramica de la antena lado derecho",
-                    "Foto panoramica de la antena lado izquierdo", "Foto panoramica de la antena lado superior",
-                    "Foto panoramica de la antena lado inferior", "Foto panoramica del herraje de la antena",
-                    "Foto de la marquilla acrilica de la antena", "Foto de la marquilla acrilica tierras odus",
-                    "Foto de la marquilla acrilica cables IF", "Foto de los encintados RX - TX conexion ODUS",
-                    "Foto de la conexion y termoencogible cable de tierra"
-                ]
-            }
-        ]
-    },
-    {
-        bloque: "BLOQUE 2: RECORRIDO DEL CABLEADO IF EXTERIOR/INTERIOR",
-        subtitulos: [
-            {
-                nombre: "Panoramica de recorrido a lo largo de la torre Vertical",
-                fotos: [
-                    "Foto panoramica de conexion cable IF - ODU", "Foto panoramica del recorrido en estructura de la torre",
-                    "Foto panoramica de inicio de escalerilla vertical", "Foto panoramica del recorrido escalerilla vertical de la mitad hacia abajo",
-                    "Foto panoramica del recorrido escalerilla vertical de la mitad hacia arriba", "Foto panoramica del recorrido escalerilla vertical llegando a la escalerilla horizontal"
-                ]
-            },
-            {
-                nombre: "Panoramica de recorrido en escalerilla horizontal",
-                fotos: [
-                    "Foto panoramica de la curvatura de la escalerilla vertical a horizontal", "Foto panoramica del recorrido escalerilla horizontal - por tramos de escalerilla",
-                    "Foto panoramica del recorrido e ingreso a pasamuros / gabinete", "Foto panoramica del recorrido escalerilla interior",
-                    "Foto panoramica del recorrido en rack o gabinete and conexion a la IDU", "Foto de las marquillas de los cable IF conectados a la IDU"
-                ]
-            }
-        ]
-    },
-    {
-        bloque: "BLOQUE 3: PDB",
-        subtitulos: [
-            {
-                nombre: "Conexiones PDB",
-                fotos: [
-                    "Foto panoramica del PDB tapas cerradas", "Foto panoramica del PDB tapas abiertas",
-                    "Foto panoramica de los breakers conectados MAIN/STANDBY", "Foto panoramica de la marquilla and conexion +0v MAIN/STANDBY",
-                    "Foto panoramica de la marquilla and conexion -48v MAIN/STANDBY", "Foto panoramica de la marquilla and conexion GND MAIN/STANDBY",
-                    "Foto panoramica de la marquilla and conexion hilo de drenaje MAIN/STANDBY"
-                ]
-            }
-        ]
-    },
-    {
-        bloque: "BLOQUE 4: SISTEMA PUESTA DE TIERRA",
-        subtitulos: [
-            {
-                nombre: "Conexion sistema de tierra",
-                fotos: [
-                    "Foto conexion del cable de tierra en IDU and marquilla de tierra", "Foto conexion del cable de tierra en barraje de tierra and marquilla de tierra",
-                    "Foto conexion del cable de tierra de las ODUS en guaya and marquillas acrilicas", "Foto conexion del cable de cable de tierra cables IF en torres/barrajes, encintados and marquillas acrilicas"
-                ]
-            }
-        ]
-    },
-    {
-        bloque: "BLOQUE 5: IDU y MARQUILLADO",
-        subtitulos: [
-            {
-                nombre: "Conexion sistema de tierra",
-                fotos: [
-                    "Foto panoramica frontal de la IDU", "Foto de la marquilla de la IDU",
-                    "Foto panoramica lado derecho de la IDU", "Foto panoramica lado izquierdo de la IDU",
-                    "Foto panoramica lado posterior/trasero de la IDU"
-                ]
-            }
-        ]
-    }
-];
+//  La estructura de bloques y fotos está en:
+//  👉 bloques.js  ← edita ese archivo para
+//     añadir, quitar o modificar bloques/fotos
+// =============================================
 
 var almacenamientoReporte = {};
 var contenedor = document.getElementById("formularioContenedor");
@@ -406,78 +331,218 @@ function actualizarListaVisual(id) {
     if (almacenamientoReporte[id]) { auditarProgresoBloque(almacenamientoReporte[id].bloquePertenece); }
 }
 
-// --- 7. VISOR / EDITOR DE IMÁGENES ---
-var currentEditId = null;
-var currentEditIdx = null;
-var vCanvas = document.getElementById("canvasEdicion");
-var vCtx = vCanvas.getContext("2d");
+// --- 7. VISOR / EDITOR DE IMÁGENES (MEJORADO) ---
+var currentEditId   = null;
+var currentEditIdx  = null;
+var vCanvas         = document.getElementById("canvasEdicion");
+var vCtx            = vCanvas.getContext("2d");
 var modoOperativoVisor = "LUPA";
-var dibujando = false;
+var dibujando       = false;
 var imagenRespaldoLimpia = new Image();
 
+// Estado del editor
+var colorActual     = "#FF0000";   // color de trazo/forma
+var grosorActual    = 4;           // grosor del trazo
+var puntoInicio     = null;        // {x, y} al presionar (para formas)
+var snapshotForma   = null;        // ImageData antes de renderizar forma en vivo
+
 function cargarVisorConEdicionDibujo(id, index) {
-    currentEditId = id; currentEditIdx = parseInt(index);
-    var dataFoto = almacenamientoReporte[id].archivos[currentEditIdx];
-    imagenRespaldoLimpia = new Image(); imagenRespaldoLimpia.src = dataFoto.previewUrl;
+    currentEditId  = id;
+    currentEditIdx = parseInt(index);
+    var dataFoto   = almacenamientoReporte[id].archivos[currentEditIdx];
+    imagenRespaldoLimpia     = new Image();
+    imagenRespaldoLimpia.src = dataFoto.previewUrl;
     imagenRespaldoLimpia.onload = function() {
-        vCanvas.width = imagenRespaldoLimpia.width; vCanvas.height = imagenRespaldoLimpia.height;
+        vCanvas.width  = imagenRespaldoLimpia.width;
+        vCanvas.height = imagenRespaldoLimpia.height;
         vCtx.drawImage(imagenRespaldoLimpia, 0, 0);
         cambiarModoVisor("LUPA");
+        sincronizarUIEditor();
         document.getElementById("visorFlotante").style.display = "flex";
     };
 }
 
+// Sincroniza la UI (selector de color y grosor) con los valores actuales
+function sincronizarUIEditor() {
+    var swatch = document.getElementById("colorActualSwatch");
+    if (swatch) swatch.style.backgroundColor = colorActual;
+    var sliderGrosor = document.getElementById("sliderGrosor");
+    if (sliderGrosor) { sliderGrosor.value = grosorActual; document.getElementById("lblGrosor").textContent = grosorActual + "px"; }
+    // Marcar el botón de color activo
+    document.querySelectorAll(".btn-color").forEach(function(b) {
+        b.classList.toggle("activo", b.getAttribute("data-color") === colorActual);
+    });
+}
+
+function cambiarColor(color) {
+    colorActual = color;
+    sincronizarUIEditor();
+}
+
+function cambiarGrosor(val) {
+    grosorActual = parseInt(val);
+    document.getElementById("lblGrosor").textContent = grosorActual + "px";
+}
+
 function cambiarModoVisor(nuevoModo) {
     modoOperativoVisor = nuevoModo;
-    var btnM = document.getElementById("btnModoDibujo");
-    var btnB = document.getElementById("btnBorrador");
+    // Resetear estilos de todos los botones de modo
+    ["btnModoDibujo","btnModoCirculo","btnModoRectangulo","btnModoCuadrado","btnModoFlecha","btnBorrador"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.classList.remove("modo-activo"); }
+    });
     var btnG = document.getElementById("btnGuardarDibujo");
-    btnM.style.backgroundColor = "#0052cc"; btnM.textContent = "✏️ Marcador";
-    btnB.style.backgroundColor = "#42526e"; btnB.textContent = "🧽 Borrador";
-    btnG.style.display = "inline-block";
+    if (btnG) btnG.style.display = modoOperativoVisor === "LUPA" ? "none" : "inline-flex";
 
-    if (modoOperativoVisor === "LUPA") { btnG.style.display = "none"; }
-    else if (modoOperativoVisor === "MARCADOR") { btnM.style.backgroundColor = "#bf2600"; btnM.textContent = "✏️ Marcando"; }
-    else if (modoOperativoVisor === "BORRADOR") { btnB.style.backgroundColor = "#ff9900"; btnB.textContent = "🧽 Borrando"; }
+    var mapaBotones = {
+        "MARCADOR":   "btnModoDibujo",
+        "CIRCULO":    "btnModoCirculo",
+        "RECTANGULO": "btnModoRectangulo",
+        "CUADRADO":   "btnModoCuadrado",
+        "FLECHA":     "btnModoFlecha",
+        "BORRADOR":   "btnBorrador"
+    };
+    if (mapaBotones[nuevoModo]) {
+        var el = document.getElementById(mapaBotones[nuevoModo]);
+        if (el) el.classList.add("modo-activo");
+    }
+}
+
+// Dibuja una flecha desde (x1,y1) hasta (x2,y2) con punta proporcional al grosor
+function dibujarFlecha(x1, y1, x2, y2) {
+    var dx      = x2 - x1;
+    var dy      = y2 - y1;
+    var angulo  = Math.atan2(dy, dx);
+    var largo   = Math.sqrt(dx * dx + dy * dy);
+    // Punta: tamaño proporcional al grosor, mínimo razonable
+    var tamPunta = Math.max(grosorActual * 6, 18);
+    var abierta  = Math.PI / 6;   // 30° apertura de cada ala
+
+    if (largo < 2) return;        // trazo demasiado corto, no dibujar
+
+    // Cuerpo de la flecha
+    vCtx.beginPath();
+    vCtx.moveTo(x1, y1);
+    vCtx.lineTo(x2, y2);
+    vCtx.strokeStyle = colorActual;
+    vCtx.lineWidth   = grosorActual;
+    vCtx.lineCap     = "round";
+    vCtx.stroke();
+
+    // Punta (triángulo relleno)
+    vCtx.beginPath();
+    vCtx.moveTo(x2, y2);
+    vCtx.lineTo(
+        x2 - tamPunta * Math.cos(angulo - abierta),
+        y2 - tamPunta * Math.sin(angulo - abierta)
+    );
+    vCtx.lineTo(
+        x2 - tamPunta * Math.cos(angulo + abierta),
+        y2 - tamPunta * Math.sin(angulo + abierta)
+    );
+    vCtx.closePath();
+    vCtx.fillStyle = colorActual;
+    vCtx.fill();
 }
 
 function obtenerCoordenadasCanvas(e) {
-    var rect = vCanvas.getBoundingClientRect();
+    var rect    = vCanvas.getBoundingClientRect();
     var clienteX = e.touches ? e.touches[0].clientX : e.clientX;
     var clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: (clienteX - rect.left) * (vCanvas.width / rect.width), y: (clienteY - rect.top) * (vCanvas.height / rect.height) };
+    return {
+        x: (clienteX - rect.left) * (vCanvas.width  / rect.width),
+        y: (clienteY - rect.top)  * (vCanvas.height / rect.height)
+    };
 }
 
-function iniciarTrazo(e) { if (modoOperativoVisor === "LUPA") return; dibujando = true; var coords = obtenerCoordenadasCanvas(e); vCtx.beginPath(); vCtx.moveTo(coords.x, coords.y); e.preventDefault(); }
+// ── Eventos de dibujo ──────────────────────────────────────────────────────
+function iniciarTrazo(e) {
+    if (modoOperativoVisor === "LUPA") return;
+    e.preventDefault();
+    dibujando   = true;
+    puntoInicio = obtenerCoordenadasCanvas(e);
+    // Para formas: guardar snapshot del canvas actual antes de dibujar
+    if (["CIRCULO","RECTANGULO","CUADRADO","FLECHA"].indexOf(modoOperativoVisor) !== -1) {
+        snapshotForma = vCtx.getImageData(0, 0, vCanvas.width, vCanvas.height);
+    }
+    if (modoOperativoVisor === "MARCADOR") {
+        vCtx.beginPath();
+        vCtx.moveTo(puntoInicio.x, puntoInicio.y);
+    }
+}
+
 function moverTrazo(e) {
     if (!dibujando || modoOperativoVisor === "LUPA") return;
-    var coords = obtenerCoordenadasCanvas(e);
-    if (modoOperativoVisor === "MARCADOR") {
-        vCtx.lineTo(coords.x, coords.y); vCtx.strokeStyle = "#FF0000"; vCtx.lineWidth = Math.round(vCanvas.width * 0.006 || 5);
-        vCtx.lineCap = "round"; vCtx.lineJoin = "round"; vCtx.stroke();
-    } else if (modoOperativoVisor === "BORRADOR") {
-        var radioBorrador = Math.round(vCanvas.width * 0.02 || 20);
-        vCtx.save(); vCtx.beginPath(); vCtx.arc(coords.x, coords.y, radioBorrador, 0, Math.PI * 2); vCtx.clip();
-        vCtx.drawImage(imagenRespaldoLimpia, 0, 0); vCtx.restore();
-    }
     e.preventDefault();
-}
-function detenerTrazo() { dibujando = false; }
+    var coords = obtenerCoordenadasCanvas(e);
 
-vCanvas.addEventListener("mousedown", iniciarTrazo);
-vCanvas.addEventListener("mousemove", moverTrazo);
-window.addEventListener("mouseup", detenerTrazo);
-vCanvas.addEventListener("touchstart", iniciarTrazo, { passive: false });
-vCanvas.addEventListener("touchmove", moverTrazo, { passive: false });
-vCanvas.addEventListener("touchend", detenerTrazo);
+    if (modoOperativoVisor === "MARCADOR") {
+        vCtx.lineTo(coords.x, coords.y);
+        vCtx.strokeStyle = colorActual;
+        vCtx.lineWidth   = grosorActual;
+        vCtx.lineCap     = "round";
+        vCtx.lineJoin    = "round";
+        vCtx.stroke();
+
+    } else if (modoOperativoVisor === "BORRADOR") {
+        var radio = Math.max(grosorActual * 4, 20);
+        vCtx.save();
+        vCtx.beginPath();
+        vCtx.arc(coords.x, coords.y, radio, 0, Math.PI * 2);
+        vCtx.clip();
+        vCtx.drawImage(imagenRespaldoLimpia, 0, 0);
+        vCtx.restore();
+
+    } else if (snapshotForma) {
+        // Restaurar snapshot y redibujar la forma en tiempo real
+        vCtx.putImageData(snapshotForma, 0, 0);
+        vCtx.strokeStyle = colorActual;
+        vCtx.lineWidth   = grosorActual;
+        vCtx.beginPath();
+
+        var dx = coords.x - puntoInicio.x;
+        var dy = coords.y - puntoInicio.y;
+
+        if (modoOperativoVisor === "CIRCULO") {
+            var rx = Math.abs(dx) / 2;
+            var ry = Math.abs(dy) / 2;
+            var cx = puntoInicio.x + dx / 2;
+            var cy = puntoInicio.y + dy / 2;
+            vCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+            vCtx.stroke();
+
+        } else if (modoOperativoVisor === "RECTANGULO") {
+            vCtx.strokeRect(puntoInicio.x, puntoInicio.y, dx, dy);
+
+        } else if (modoOperativoVisor === "CUADRADO") {
+            var lado = Math.min(Math.abs(dx), Math.abs(dy));
+            var sx   = dx < 0 ? -lado : lado;
+            var sy   = dy < 0 ? -lado : lado;
+            vCtx.strokeRect(puntoInicio.x, puntoInicio.y, sx, sy);
+
+        } else if (modoOperativoVisor === "FLECHA") {
+            dibujarFlecha(puntoInicio.x, puntoInicio.y, coords.x, coords.y);
+        }
+    }
+}
+
+function detenerTrazo() { dibujando = false; snapshotForma = null; }
+
+vCanvas.addEventListener("mousedown",  iniciarTrazo);
+vCanvas.addEventListener("mousemove",  moverTrazo);
+window.addEventListener("mouseup",     detenerTrazo);
+vCanvas.addEventListener("touchstart", iniciarTrazo,  { passive: false });
+vCanvas.addEventListener("touchmove",  moverTrazo,    { passive: false });
+vCanvas.addEventListener("touchend",   detenerTrazo);
 
 function guardarTrazosDibujo() {
     vCanvas.toBlob(function(blob) {
-        var base64Editado = vCanvas.toDataURL("image/jpeg", 0.85);
-        var nombreOriginal = almacenamientoReporte[currentEditId].archivos[currentEditIdx].file.name;
+        var base64Editado    = vCanvas.toDataURL("image/jpeg", 0.85);
+        var nombreOriginal   = almacenamientoReporte[currentEditId].archivos[currentEditIdx].file.name;
         var archivoEditadoFile = new File([blob], nombreOriginal, { type: "image/jpeg", lastModified: Date.now() });
         almacenamientoReporte[currentEditId].archivos[currentEditIdx] = { file: archivoEditadoFile, previewUrl: base64Editado };
-        actualizarListaVisual(currentEditId); cerrarVisor();
+        actualizarListaVisual(currentEditId);
+        cerrarVisor();
     }, "image/jpeg", 0.85);
 }
 
@@ -713,43 +778,168 @@ function actualizarContadorBorradoresOffline() {
     };
 }
 
-function simularSincronizacionOffline() {
-    var estado = document.getElementById("estado");
-    estado.style.display = "block";
-    estado.className = "success";
-    estado.innerHTML = "<strong>⚡ ¡Sincronización Simulada Exitosa!</strong><br>Los paquetes de evidencias se estructuraron correctamente para SharePoint.<br><small>(La base de datos local se mantiene intacta para que sigas auditando los botones).</small>";
-    window.scrollTo(0, estado.offsetTop - 60);
-}
+// =============================================
+// CONFIGURACIÓN DE POWER AUTOMATE
+// Reemplaza esta URL con la URL del trigger
+// HTTP que te genera Power Automate
+// =============================================
+var POWER_AUTOMATE_URL = "https://prod-XX.westus.logic.azure.com/workflows/TU_URL_AQUI";
 
-// --- Auditoría Final Completa ---
+// --- Auditoría Final + Envío real a Power Automate por lotes ---
 document.getElementById("btnEnviar").addEventListener("click", function() {
     var estado = document.getElementById("estado");
-    estado.style.display = "block"; estado.className = "info"; estado.textContent = "Validando checklist obligatorio de interventoría...";
-    try {
-        var prj = document.getElementById("txtCodigoProyecto").value.trim();
-        var act = document.getElementById("selActividad").value;
-        var sitio = document.getElementById("txtNombreSitio").value.trim();
-        var tec = document.getElementById("txtNombreTecnico").value.trim();
-        if (!prj || !act || !sitio || !tec) { throw new Error("CAMPOS INCOMPLETOS:\nTodos los metadatos superiores son obligatorios."); }
+    estado.style.display = "block";
+    estado.className = "info";
+    estado.textContent = "Validando checklist obligatorio de interventoría...";
 
+    try {
+        var prj  = document.getElementById("txtCodigoProyecto").value.trim();
+        var act  = document.getElementById("selActividad").value;
+        var sitio = document.getElementById("txtNombreSitio").value.trim();
+        var tec  = document.getElementById("txtNombreTecnico").value.trim();
+        var fecha = document.getElementById("txtDiaActividad").value;
+
+        if (!prj || !act || !sitio || !tec) {
+            throw new Error("CAMPOS INCOMPLETOS:\nTodos los metadatos superiores son obligatorios.");
+        }
+
+        // Validar que todos los ítems tienen foto o No Aplica
         var totalFaltantes = 0;
-        var todosLosItems = document.querySelectorAll(".foto-item");
-        for (var x = 0; x < todosLosItems.length; x++) todosLosItems[x].classList.remove("incompleto");
+        document.querySelectorAll(".foto-item").forEach(function(el) { el.classList.remove("incompleto"); });
 
         for (var id in almacenamientoReporte) {
             var item = almacenamientoReporte[id];
             if (!item || (!item.noAplica && item.archivos.length === 0)) {
-                var contNode = document.getElementById("item_bloque_" + id);
-                if (contNode) contNode.classList.add("incompleto");
+                var nodo = document.getElementById("item_bloque_" + id);
+                if (nodo) nodo.classList.add("incompleto");
                 totalFaltantes++;
             }
         }
         if (totalFaltantes > 0) {
-            document.querySelector(".foto-item.incompleto").scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.querySelector(".foto-item.incompleto").scrollIntoView({ behavior: "smooth", block: "center" });
             throw new Error("REPORTE RECHAZADO:\nFaltan " + totalFaltantes + " evidencias fotográficas en el checklist.");
         }
-        estado.className = "success"; estado.innerHTML = "<strong>¡Auditoría de Lote Aprobada!</strong> Reporte consolidado a calidad Full HD.";
+
+        // Auditoría aprobada — armar lotes por bloque y enviar
+        estado.innerHTML = "✅ Auditoría aprobada. Iniciando envío a SharePoint...";
+        enviarPorLotesASharePoint(prj, sitio, act, tec, fecha);
+
     } catch (error) {
-        estado.className = "error"; estado.textContent = error.message;
+        estado.className = "error";
+        estado.textContent = error.message;
     }
 });
+
+// --- Construye y envía un lote por cada bloque ---
+function enviarPorLotesASharePoint(proyecto, sitio, actividad, tecnico, fecha) {
+    var estado = document.getElementById("estado");
+    var btnEnviar = document.getElementById("btnEnviar");
+    btnEnviar.disabled = true;
+
+    // Armar array de lotes: uno por bloque
+    var lotes = [];
+
+    for (var bIdx = 0; bIdx < estructuraBloques.length; bIdx++) {
+        var contenedorBloque = document.getElementById("bloque_container_" + bIdx);
+        if (!contenedorBloque) continue;
+
+        var idsMapeados = JSON.parse(contenedorBloque.getAttribute("data-inputs-mapeados"));
+        var fotos = [];
+
+        for (var m = 0; m < idsMapeados.length; m++) {
+            var idInput = idsMapeados[m];
+            var itemMem = almacenamientoReporte[idInput];
+            if (!itemMem) continue;
+
+            if (itemMem.noAplica) {
+                fotos.push({
+                    nombreArchivo: itemMem.nombreBase + ".jpg",
+                    noAplica: true,
+                    base64: null
+                });
+            } else {
+                for (var f = 0; f < itemMem.archivos.length; f++) {
+                    var sufijo = itemMem.archivos.length > 1 ? "_" + (f + 1) : "";
+                    // Extraer solo el contenido Base64 sin el prefijo "data:image/jpeg;base64,"
+                    var base64Limpio = itemMem.archivos[f].previewUrl.split(",")[1];
+                    fotos.push({
+                        nombreArchivo: itemMem.nombreBase + sufijo + ".jpg",
+                        noAplica: false,
+                        base64: base64Limpio
+                    });
+                }
+            }
+        }
+
+        lotes.push({
+            bloqueIndex: bIdx,
+            nombreBloque: estructuraBloques[bIdx].bloque,
+            fotos: fotos
+        });
+    }
+
+    // Enviar lotes secuencialmente
+    var bloqueActual = 0;
+    var totalBloques = lotes.length;
+    var errores = [];
+
+    function enviarSiguienteLote() {
+        if (bloqueActual >= totalBloques) {
+            // Todos los lotes enviados
+            btnEnviar.disabled = false;
+            if (errores.length === 0) {
+                estado.className = "success";
+                estado.innerHTML = "🎉 <strong>¡Reporte enviado exitosamente!</strong><br>" +
+                    "📁 Las fotos están disponibles en SharePoint bajo:<br>" +
+                    "<em>" + proyecto + " → " + sitio + "</em><br>" +
+                    "<small>El registro maestro fue actualizado automáticamente.</small>";
+            } else {
+                estado.className = "error";
+                estado.innerHTML = "⚠️ Envío completado con errores en: " + errores.join(", ") +
+                    "<br><small>Los demás bloques se enviaron correctamente.</small>";
+            }
+            window.scrollTo(0, estado.offsetTop - 60);
+            return;
+        }
+
+        var lote = lotes[bloqueActual];
+        estado.innerHTML = "📤 Enviando " + (bloqueActual + 1) + " de " + totalBloques +
+            ": <strong>" + lote.nombreBloque + "</strong>...";
+
+        var payload = {
+            metadata: {
+                codigoProyecto: proyecto,
+                nombreSitio:    sitio,
+                actividad:      actividad,
+                tecnico:        tecnico,
+                fecha:          fecha,
+                fechaEnvio:     new Date().toISOString(),
+                totalBloques:   totalBloques,
+                bloqueActual:   bloqueActual + 1
+            },
+            bloque: {
+                index:        lote.bloqueIndex,
+                nombre:       lote.nombreBloque,
+                fotos:        lote.fotos
+            }
+        };
+
+        fetch(POWER_AUTOMATE_URL, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify(payload)
+        })
+        .then(function(resp) {
+            if (!resp.ok) { throw new Error("HTTP " + resp.status); }
+            bloqueActual++;
+            enviarSiguienteLote();
+        })
+        .catch(function(err) {
+            errores.push(lote.nombreBloque);
+            bloqueActual++;
+            enviarSiguienteLote();
+        });
+    }
+
+    enviarSiguienteLote();
+}
