@@ -783,7 +783,7 @@ function actualizarContadorBorradoresOffline() {
 // Reemplaza esta URL con la URL del trigger
 // HTTP que te genera Power Automate
 // =============================================
-var POWER_AUTOMATE_URL = "https://defaultef33d41cb3e34e3f958ab0d14b400c.f3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ac4195de895e463ea49b6a1444f65ffc/triggers/manual/paths/invoke?api-version=1";
+var POWER_AUTOMATE_URL = "https://defaultef33d41cb3e34e3f958ab0d14b400c.f3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ac4195de895e463ea49b6a1444f65ffc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=wEL40dSfBLKFQvQbagvHtMMiIFOAMKD4ANBgDQyFt6g";
 
 // --- Auditoría Final + Envío real a Power Automate por lotes ---
 document.getElementById("btnEnviar").addEventListener("click", function() {
