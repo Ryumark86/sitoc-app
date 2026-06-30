@@ -778,14 +778,7 @@ function actualizarContadorBorradoresOffline() {
     };
 }
 
-// =============================================
-// CONFIGURACIÓN DE POWER AUTOMATE
-// Reemplaza esta URL con la URL del trigger
-// HTTP que te genera Power Automate
-// =============================================
-var POWER_AUTOMATE_URL = "https://defaultef33d41cb3e34e3f958ab0d14b400c.f3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ac4195de895e463ea49b6a1444f65ffc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=wEL40dSfBLKFQvQbagvHtMMiIFOAMKD4ANBgDQyFt6g";
-
-// --- Auditoría Final + Envío real a Power Automate por lotes ---
+// --- Auditoría Final + Generación de reporte por correo ---
 document.getElementById("btnEnviar").addEventListener("click", function() {
     var estado = document.getElementById("estado");
     estado.style.display = "block";
@@ -820,9 +813,9 @@ document.getElementById("btnEnviar").addEventListener("click", function() {
             throw new Error("REPORTE RECHAZADO:\nFaltan " + totalFaltantes + " evidencias fotográficas en el checklist.");
         }
 
-        // Auditoría aprobada — armar lotes por bloque y enviar
-        estado.innerHTML = "✅ Auditoría aprobada. Iniciando envío a SharePoint...";
-        enviarPorLotesASharePoint(prj, sitio, act, tec, fecha);
+        // Auditoría aprobada — generar archivo ZIP del reporte
+        estado.innerHTML = "✅ Auditoría aprobada. Generando archivo comprimido...";
+        generarReporteZip(prj, sitio, act, tec, fecha);
 
     } catch (error) {
         estado.className = "error";
@@ -830,18 +823,29 @@ document.getElementById("btnEnviar").addEventListener("click", function() {
     }
 });
 
-// --- Construye y envía un lote por cada bloque ---
-function enviarPorLotesASharePoint(proyecto, sitio, actividad, tecnico, fecha) {
+// --- Construye el ZIP completo: fotos en carpetas por bloque + CSV + JSON ---
+function generarReporteZip(proyecto, sitio, actividad, tecnico, fecha) {
     var estado = document.getElementById("estado");
     var btnEnviar = document.getElementById("btnEnviar");
     btnEnviar.disabled = true;
+    estado.style.display = "block";
+    estado.className = "info";
+    estado.innerHTML = "📦 Comprimiendo fotos y datos, esto puede tardar unos segundos...";
+    window.scrollTo(0, estado.offsetTop - 60);
 
-    // Armar array de lotes: uno por bloque
-    var lotes = [];
+    var zip = new JSZip();
+    var bloquesCompletos = [];
+    var filasCSV = [];
+    filasCSV.push(["Bloque", "Item", "Nombre Archivo", "No Aplica"].join(";"));
 
     for (var bIdx = 0; bIdx < estructuraBloques.length; bIdx++) {
         var contenedorBloque = document.getElementById("bloque_container_" + bIdx);
         if (!contenedorBloque) continue;
+
+        var nombreBloque = estructuraBloques[bIdx].bloque;
+        var nombreCarpetaBloque = "Bloque_" + (bIdx + 1) + "_" +
+            nombreBloque.replace(/^BLOQUE\s*\d+:\s*/i, "").trim().replace(/[^a-zA-Z0-9]/g, "_").substring(0, 40);
+        var carpetaZip = zip.folder(nombreCarpetaBloque);
 
         var idsMapeados = JSON.parse(contenedorBloque.getAttribute("data-inputs-mapeados"));
         var fotos = [];
@@ -852,94 +856,96 @@ function enviarPorLotesASharePoint(proyecto, sitio, actividad, tecnico, fecha) {
             if (!itemMem) continue;
 
             if (itemMem.noAplica) {
-                fotos.push({
-                    nombreArchivo: itemMem.nombreBase + ".jpg",
-                    noAplica: true,
-                    base64: null
-                });
+                fotos.push({ nombreArchivo: itemMem.nombreBase + ".jpg", noAplica: true, base64: null });
+                filasCSV.push([nombreBloque, itemMem.nombreBase, "(No Aplica)", "SI"].join(";"));
             } else {
                 for (var f = 0; f < itemMem.archivos.length; f++) {
                     var sufijo = itemMem.archivos.length > 1 ? "_" + (f + 1) : "";
-                    // Extraer solo el contenido Base64 sin el prefijo "data:image/jpeg;base64,"
+                    var nombreArchivoFoto = itemMem.nombreBase + sufijo + ".jpg";
                     var base64Limpio = itemMem.archivos[f].previewUrl.split(",")[1];
-                    fotos.push({
-                        nombreArchivo: itemMem.nombreBase + sufijo + ".jpg",
-                        noAplica: false,
-                        base64: base64Limpio
-                    });
+
+                    fotos.push({ nombreArchivo: nombreArchivoFoto, noAplica: false, base64: base64Limpio });
+                    filasCSV.push([nombreBloque, itemMem.nombreBase, nombreArchivoFoto, "NO"].join(";"));
+
+                    // Agregar la imagen real (binaria) dentro de la carpeta del bloque
+                    carpetaZip.file(nombreArchivoFoto, base64Limpio, { base64: true });
                 }
             }
         }
 
-        lotes.push({
-            bloqueIndex: bIdx,
-            nombreBloque: estructuraBloques[bIdx].bloque,
-            fotos: fotos
-        });
+        bloquesCompletos.push({ index: bIdx, nombre: nombreBloque, fotos: fotos });
     }
 
-    // Enviar lotes secuencialmente
-    var bloqueActual = 0;
-    var totalBloques = lotes.length;
-    var errores = [];
+    // --- Construir el reporte JSON (para cargar en el programa de PC) ---
+    var reporteCompleto = {
+        metadata: {
+            codigoProyecto: proyecto,
+            nombreSitio:    sitio,
+            actividad:      actividad,
+            tecnico:        tecnico,
+            fecha:          fecha,
+            fechaEnvio:     new Date().toISOString(),
+            totalBloques:   bloquesCompletos.length
+        },
+        bloques: bloquesCompletos
+    };
+    zip.file("reporte.json", JSON.stringify(reporteCompleto, null, 2));
 
-    function enviarSiguienteLote() {
-        if (bloqueActual >= totalBloques) {
-            // Todos los lotes enviados
+    // --- Construir el resumen CSV (compatible con Excel) ---
+    var encabezadoCSV =
+        "Codigo Proyecto;Nombre Sitio;Tecnico;Actividad;Fecha;Fecha Envio\n" +
+        proyecto + ";" + sitio + ";" + tecnico + ";" + actividad + ";" + fecha + ";" + new Date().toISOString() + "\n\n";
+    var contenidoCSV = "\uFEFF" + encabezadoCSV + filasCSV.join("\n");
+    zip.file("resumen_reporte.csv", contenidoCSV);
+
+    // Nombre de archivo seguro: SITOC_Proyecto_Sitio_Fecha.zip
+    var nombreZipSeguro = "SITOC_" +
+        proyecto.replace(/[^a-zA-Z0-9]/g, "_") + "_" +
+        sitio.replace(/[^a-zA-Z0-9]/g, "_") + "_" +
+        fecha + ".zip";
+
+    // --- Generar y descargar el ZIP ---
+    zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } })
+        .then(function(blobZip) {
+            var urlDescarga = URL.createObjectURL(blobZip);
+            var linkDescarga = document.createElement("a");
+            linkDescarga.href = urlDescarga;
+            linkDescarga.download = nombreZipSeguro;
+            document.body.appendChild(linkDescarga);
+            linkDescarga.click();
+            document.body.removeChild(linkDescarga);
+            URL.revokeObjectURL(urlDescarga);
+
+            mostrarSelectorEnvio(nombreZipSeguro, proyecto, sitio);
             btnEnviar.disabled = false;
-            if (errores.length === 0) {
-                estado.className = "success";
-                estado.innerHTML = "🎉 <strong>¡Reporte enviado exitosamente!</strong><br>" +
-                    "📁 Las fotos están disponibles en SharePoint bajo:<br>" +
-                    "<em>" + proyecto + " → " + sitio + "</em><br>" +
-                    "<small>El registro maestro fue actualizado automáticamente.</small>";
-            } else {
-                estado.className = "error";
-                estado.innerHTML = "⚠️ Envío completado con errores en: " + errores.join(", ") +
-                    "<br><small>Los demás bloques se enviaron correctamente.</small>";
-            }
-            window.scrollTo(0, estado.offsetTop - 60);
-            return;
-        }
-
-        var lote = lotes[bloqueActual];
-        estado.innerHTML = "📤 Enviando " + (bloqueActual + 1) + " de " + totalBloques +
-            ": <strong>" + lote.nombreBloque + "</strong>...";
-
-        var payload = {
-            metadata: {
-                codigoProyecto: proyecto,
-                nombreSitio:    sitio,
-                actividad:      actividad,
-                tecnico:        tecnico,
-                fecha:          fecha,
-                fechaEnvio:     new Date().toISOString(),
-                totalBloques:   totalBloques,
-                bloqueActual:   bloqueActual + 1
-            },
-            bloque: {
-                index:        lote.bloqueIndex,
-                nombre:       lote.nombreBloque,
-                fotos:        lote.fotos
-            }
-        };
-        console.log("PAYLOAD ENVIADO:", JSON.stringify(payload, null, 2));
-        fetch(POWER_AUTOMATE_URL, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify(payload)
-        })
-        .then(function(resp) {
-            if (!resp.ok) { throw new Error("HTTP " + resp.status); }
-            bloqueActual++;
-            enviarSiguienteLote();
         })
         .catch(function(err) {
-            errores.push(lote.nombreBloque);
-            bloqueActual++;
-            enviarSiguienteLote();
+            estado.className = "error";
+            estado.innerHTML = "❌ Error al generar el archivo comprimido: " + err.message;
+            btnEnviar.disabled = false;
         });
-    }
+}
 
-    enviarSiguienteLote();
+// --- Muestra los botones para elegir WhatsApp o Telegram tras la descarga ---
+function mostrarSelectorEnvio(nombreZip, proyecto, sitio) {
+    var estado = document.getElementById("estado");
+    var mensaje = encodeURIComponent(
+        "Reporte SITOC\nProyecto: " + proyecto + "\nSitio: " + sitio +
+        "\n\n⚠️ Adjunta manualmente el archivo " + nombreZip + " descargado (carpeta Descargas) antes de enviar."
+    );
+
+    estado.className = "success";
+    estado.innerHTML =
+        "📦 <strong>Archivo descargado:</strong> " + nombreZip + "<br>" +
+        "<small>Contiene: fotos en carpetas por bloque + resumen_reporte.csv + reporte.json</small><br><br>" +
+        "📲 <strong>Elige cómo enviarlo:</strong>" +
+        "<div style='display:flex; gap:10px; margin-top:10px; justify-content:center; flex-wrap:wrap;'>" +
+        "<button type='button' class='btn-opcion' style='background:#25D366; color:white; border-color:#25D366;' " +
+        "onclick=\"window.open('https://wa.me/?text=" + mensaje + "', '_blank')\">💬 Abrir WhatsApp</button>" +
+        "<button type='button' class='btn-opcion' style='background:#229ED9; color:white; border-color:#229ED9;' " +
+        "onclick=\"window.open('https://t.me/share/url?url=&text=" + mensaje + "', '_blank')\">✈️ Abrir Telegram</button>" +
+        "</div>" +
+        "<small style='display:block; margin-top:10px;'>Recuerda adjuntar el archivo " + nombreZip + " manualmente en el chat que se abre.</small>";
+
+    window.scrollTo(0, estado.offsetTop - 60);
 }
