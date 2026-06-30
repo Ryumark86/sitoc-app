@@ -279,10 +279,18 @@ h3.titulo-bloque {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+.preview-info span {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
 }
 .img-miniatura {
     width: 45px;
     height: 45px;
+    flex-shrink: 0;
     object-fit: cover;
     border-radius: 4px;
     border: 1px solid #abf5d1;
@@ -290,13 +298,16 @@ h3.titulo-bloque {
     background-color: #eaecf0;
 }
 .btn-eliminar {
-    background: none;
-    border: none;
+    background: #ffebe6;
+    border: 1px solid #ffbdad;
+    border-radius: 4px;
     color: #bf2600;
     font-weight: bold;
     cursor: pointer;
-    font-size: 16px;
-    padding: 5px 10px;
+    font-size: 18px;
+    line-height: 1;
+    padding: 6px 12px;
+    flex-shrink: 0;
 }
 .sin-archivos {
     font-size: 12px;
