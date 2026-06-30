@@ -258,7 +258,7 @@ function procesarFotoCanvasPro(id, archivoOriginal) {
             canvas.width = anchoFinal; canvas.height = altoFinal;
             ctx.drawImage(img, 0, 0, anchoFinal, altoFinal);
 
-            var tamanoFuente = Math.round(canvas.width * 0.016); if (tamanoFuente < 14) tamanoFuente = 14;
+            var tamanoFuente = Math.round(canvas.width * 0.016); if (tamanoFuente < 14) tamanoFuente = 25;
             ctx.font = "bold " + tamanoFuente + "px 'Courier New', Courier, monospace";
 
             var altoLinea = tamanoFuente * 1.5; var altoCajaTotal = altoLinea * 2; var yPosCaja = canvas.height - altoCajaTotal;
