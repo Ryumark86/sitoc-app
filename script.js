@@ -923,7 +923,7 @@ function enviarPorLotesASharePoint(proyecto, sitio, actividad, tecnico, fecha) {
                 fotos:        lote.fotos
             }
         };
-
+        console.log("PAYLOAD ENVIADO:", JSON.stringify(payload, null, 2));
         fetch(POWER_AUTOMATE_URL, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
