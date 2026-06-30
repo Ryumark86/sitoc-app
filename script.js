@@ -249,7 +249,7 @@ function procesarFotoCanvasPro(id, archivoOriginal) {
         var img = new Image(); img.src = evento.target.result;
         img.onload = function() {
             var canvas = document.createElement("canvas"); var ctx = canvas.getContext("2d");
-            var MAX_ANCHO = 1920; var MAX_ALTO = 1080;
+            var MAX_ANCHO = 2560; var MAX_ALTO = 1440;
             var anchoFinal = img.width; var altoFinal = img.height;
 
             if (anchoFinal > altoFinal) { if (anchoFinal > MAX_ANCHO) { altoFinal *= MAX_ANCHO / anchoFinal; anchoFinal = MAX_ANCHO; } }
