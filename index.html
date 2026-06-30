@@ -58,7 +58,7 @@
     <div class="panel-envio">
         <button type="button" id="btnNuevoSitio" class="btn-opcion" style="background-color: #0052cc; color: white; margin-bottom: 5px; font-weight: bold; padding: 15px; font-size:14px;">➕ Iniciar Nuevo Sitio / Cambiar Estación</button>
         <button id="btnGuardarLocal" class="btn-envio-principal" onclick="guardarBorradorLocalDB()">💾 Guardar Todo en Borrador Local</button>
-        <button id="btnEnviar" class="btn-envio-principal">🚀 Enviar Reporte a SharePoint</button>
+        <button id="btnEnviar" class="btn-envio-principal">🚀 Generar Reporte (.zip) y Enviar</button>
     </div>
 
     <div id="estado"></div>
@@ -104,6 +104,9 @@
 
         </div>
     </div>
+
+    <!-- Librería para generar archivos ZIP en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <!-- 👉 Edita bloques.js para añadir/quitar bloques y fotos -->
     <script src="bloques.js"></script>
